@@ -7,6 +7,8 @@ A simple application to demonstrate implementing [KFSM](https://github.com/open-
 ```
 ## Sending Events
 
+In a real world scenario the state will not be a parameter to requests because it will be maintained by the entity.
+
 ### Start
 ```bash
 http http://localhost:8080/
