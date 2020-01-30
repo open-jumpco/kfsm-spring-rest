@@ -17,27 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import javax.xml.bind.annotation.XmlRootElement
 
-class TurnstileHandler : Turnstile {
-
-    override fun lock(info: TurnstileInfo): TurnstileInfo {
-        require(!info.locked) { "Expected unlocked" }
-        return info.copy(locked = true, message = "", alarm = false)
-    }
-
-    override fun unlock(info: TurnstileInfo): TurnstileInfo {
-        require(info.locked) { "Expected locked" }
-        return info.copy(locked = false, message = "", alarm = false)
-    }
-
-    override fun returnCoin(info: TurnstileInfo): TurnstileInfo {
-        return info.copy(message = "Return Coin", alarm = false)
-    }
-
-    override fun alarm(info: TurnstileInfo): TurnstileInfo {
-        return info.copy(message = "Alarm", alarm = true)
-    }
-}
-
 @XmlRootElement
 @Relation(collectionRelation = "turnstiles")
 class TurnstileResource(info: TurnstileInfo, vararg links: Link) : EntityModel<TurnstileInfo>(info, *links)
@@ -59,7 +38,7 @@ class TurnstileResourceAssembler : RepresentationModelAssemblerSupport<Turnstile
         val links = mutableListOf(
             linkTo(methodOn(TurnstileController::class.java).get(entity.id)).withSelfRel()
         )
-        val fsm = TurnstileFSM(TurnstileHandler(), entity.locked)
+        val fsm = TurnstileFSM(entity)
         TurnstileEvent.values().forEach { event ->
             if (fsm.allowed(event)) {
                 when (event) {
@@ -99,8 +78,7 @@ class TurnstileController(val modelAssembler: TurnstileResourceAssembler) {
     @PostMapping("/{id}/coin")
     fun coin(@PathVariable("id") id: Int): ResponseEntity<TurnstileResource> {
         val turnstile = turnstiles[id] ?: return ResponseEntity.notFound().build()
-        val handler = TurnstileHandler()
-        val fsm = TurnstileFSM(handler, turnstile.locked)
+        val fsm = TurnstileFSM(turnstile)
         val result = fsm.coin(turnstile)
         require(result != null) { "Expected result" }
         turnstiles[id] = result
@@ -110,8 +88,7 @@ class TurnstileController(val modelAssembler: TurnstileResourceAssembler) {
     @PostMapping("/{id}/pass")
     fun pass(@PathVariable("id") id: Int): ResponseEntity<TurnstileResource> {
         val turnstile = turnstiles[id] ?: return ResponseEntity.notFound().build()
-        val handler = TurnstileHandler()
-        val fsm = TurnstileFSM(handler, turnstile.locked)
+        val fsm = TurnstileFSM(turnstile)
         val result = fsm.pass(turnstile)
         require(result != null) { "Expected result" }
         turnstiles[id] = result
