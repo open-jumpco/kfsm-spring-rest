@@ -33,6 +33,7 @@ class TurnstileFSM(turnstile: TurnstileInfo) {
 
     fun coin(info: TurnstileInfo) = fsm.sendEvent(COIN, info)
     fun pass(info: TurnstileInfo) = fsm.sendEvent(PASS, info)
+    fun event(event: String, info: TurnstileInfo) = fsm.sendEvent(TurnstileEvent.valueOf(event.toUpperCase()), info)
     fun allowed(event: TurnstileEvent) = fsm.allowed().contains(event)
 
     companion object {

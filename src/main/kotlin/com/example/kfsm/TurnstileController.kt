@@ -1,7 +1,5 @@
 package com.example.kfsm
 
-import com.example.kfsm.TurnstileEvent.COIN
-import com.example.kfsm.TurnstileEvent.PASS
 import org.springframework.hateoas.CollectionModel
 import org.springframework.hateoas.EntityModel
 import org.springframework.hateoas.Link
@@ -41,18 +39,13 @@ class TurnstileResourceAssembler : RepresentationModelAssemblerSupport<Turnstile
         val fsm = TurnstileFSM(entity)
         TurnstileEvent.values().forEach { event ->
             if (fsm.allowed(event)) {
-                when (event) {
-                    COIN -> links.add(
-                        linkTo(methodOn(TurnstileController::class.java).coin(entity.id))
-                            .withRel(event.name.toLowerCase())
-                    )
-                    PASS -> links.add(
-                        linkTo(methodOn(TurnstileController::class.java).pass(entity.id))
-                            .withRel(event.name.toLowerCase())
-                    )
-                }
+                links.add(
+                    linkTo(methodOn(TurnstileController::class.java).event(entity.id, event.name.toLowerCase()))
+                        .withRel(event.name.toLowerCase())
+                )
             }
         }
+
         return links.toTypedArray()
     }
 }
@@ -75,21 +68,11 @@ class TurnstileController(val modelAssembler: TurnstileResourceAssembler) {
         }
     }
 
-    @PostMapping("/{id}/coin")
-    fun coin(@PathVariable("id") id: Int): ResponseEntity<TurnstileResource> {
+    @PostMapping("/{id}/{event}")
+    fun event(@PathVariable("id") id: Int, @PathVariable("event") event: String): ResponseEntity<TurnstileResource> {
         val turnstile = turnstiles[id] ?: return ResponseEntity.notFound().build()
         val fsm = TurnstileFSM(turnstile)
-        val result = fsm.coin(turnstile)
-        require(result != null) { "Expected result" }
-        turnstiles[id] = result
-        return ResponseEntity.ok(modelAssembler.toModel(result))
-    }
-
-    @PostMapping("/{id}/pass")
-    fun pass(@PathVariable("id") id: Int): ResponseEntity<TurnstileResource> {
-        val turnstile = turnstiles[id] ?: return ResponseEntity.notFound().build()
-        val fsm = TurnstileFSM(turnstile)
-        val result = fsm.pass(turnstile)
+        val result = fsm.event(event, turnstile)
         require(result != null) { "Expected result" }
         turnstiles[id] = result
         return ResponseEntity.ok(modelAssembler.toModel(result))
