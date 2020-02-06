@@ -5,14 +5,23 @@ import com.example.kfsm.TurnstileEvent.PASS
 import com.example.kfsm.TurnstileState.LOCKED
 import com.example.kfsm.TurnstileState.UNLOCKED
 import io.jumpco.open.kfsm.stateMachine
-import org.springframework.http.HttpStatus.CONFLICT
-import org.springframework.web.bind.annotation.ResponseStatus
 
-data class TurnstileInfo(
-    val id: Int,
-    val locked: Boolean = true,
-    val message: String = ""
-)
+data class TurnstileData(
+    val id: Long,
+    val locked: Boolean,
+    val message: String
+) {
+    val currentState: TurnstileState
+        get() = if (locked) LOCKED else UNLOCKED
+}
+
+interface TurnstileContext {
+    val currentState: TurnstileState
+    fun alarm(): TurnstileData?
+    fun lock(): TurnstileData?
+    fun unlock(): TurnstileData?
+    fun returnCoin(): TurnstileData?
+}
 
 enum class TurnstileEvent {
     COIN,
@@ -24,48 +33,46 @@ enum class TurnstileState {
     UNLOCKED
 }
 
-@ResponseStatus(CONFLICT)
-class TurnstileAlarmException(message: String) : Exception(message) {
-}
+class TurnstileFSM(context: TurnstileContext) {
+    private val fsm = definition.create(context)
 
-class TurnstileFSM(turnstile: TurnstileInfo) {
-    private val fsm = definition.create(turnstile)
-
-    fun coin(info: TurnstileInfo) = fsm.sendEvent(COIN, info)
-    fun pass(info: TurnstileInfo) = fsm.sendEvent(PASS, info)
-    fun event(event: String, info: TurnstileInfo) = fsm.sendEvent(TurnstileEvent.valueOf(event.toUpperCase()), info)
+    fun event(event: String) = fsm.sendEvent(TurnstileEvent.valueOf(event.toUpperCase()))
+    fun coin() = fsm.sendEvent(COIN)
+    fun pass() = fsm.sendEvent(PASS)
     fun allowed(event: TurnstileEvent) = fsm.allowed().contains(event)
 
     companion object {
         private val definition = stateMachine(
             TurnstileState.values().toSet(),
             TurnstileEvent.values().toSet(),
-            TurnstileInfo::class,
-            TurnstileInfo::class,
-            TurnstileInfo::class
+            TurnstileContext::class,
+            Any::class,
+            TurnstileData::class
         ) {
-            initialState { if (locked) LOCKED else UNLOCKED }
+            defaultInitialState = LOCKED
+            initialState { currentState }
             default {
-                action { _, _, info ->
-                    throw TurnstileAlarmException("Alarm")
+                action { _, _, _ ->
+                    alarm()
                 }
             }
             whenState(LOCKED) {
-                onEvent(COIN to UNLOCKED) { info ->
-                    require(info != null) { "Info required" }
-                    info.copy(locked = false, message = "")
+                onEvent(COIN to UNLOCKED) {
+                    unlock()
                 }
             }
             whenState(UNLOCKED) {
-                onEvent(PASS to LOCKED) { info ->
-                    require(info != null) { "Info required" }
-                    info.copy(locked = true, message = "")
+                onEvent(PASS to LOCKED) {
+                    lock()
                 }
                 onEvent(COIN) { info ->
                     require(info != null) { "Info required" }
-                    info.copy(message = "Return Coin")
+                    returnCoin()
                 }
             }
         }.build()
+
+        fun defaultInitialState() = definition.defaultInitialState ?: LOCKED
+        fun possibleEvents(state: TurnstileState) = definition.possibleEvents(state, false)
     }
 }

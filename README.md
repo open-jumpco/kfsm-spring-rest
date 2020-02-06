@@ -7,17 +7,115 @@ A simple application to demonstrate implementing [KFSM](https://github.com/open-
 ```
 ## Operation
 
-The FSM definition uses an immutable representation of the state instead of a variable.
-The domain entity `TurnstileInfo` is a representation of the state of the Turnstile.
-The domain entity is passed as a parameter and return from each action.
-
 When designing a FSM careful consideration of how the state is externalised is important.
 It is advisable that the type used to represent the state in the definition also be the type persisted by the domain entity or at least
  providing a consistent bi-directional conversion.
 
 In the Turnstile example we are only concerned with 2 states so a `Boolean` is an acceptible standin.
 
-The server creates 5 turnstiles that can be operated independently.
+The FSM definition uses `TurnstileContext` to represent the operations and determine the current state.
+
+The domain class `TurnstileData` is a representation of the state of the Turnstile for external use and is return from the event.
+
+```kotlin
+data class TurnstileData(
+    val id: Long,
+    val locked: Boolean,
+    val message: String
+) {
+    val currentState: TurnstileState
+        get() = if (locked) LOCKED else UNLOCKED
+}
+
+interface TurnstileContext {
+    val currentState: TurnstileState
+    fun alarm(): TurnstileData?
+    fun lock(): TurnstileData?
+    fun unlock(): TurnstileData?
+    fun returnCoin(): TurnstileData?
+}
+```
+
+We extend the `TurnstileContext` to create a persistent context using 
+[Spring Data JDBC](https://spring.io/projects/spring-data-jdbc)
+
+```kotlin
+@ResponseStatus(CONFLICT)
+class TurnstileAlarmException(message: String) : Exception(message)
+
+@ResponseStatus(NOT_FOUND)
+class TurnstileInfoNotFound(message: String) : Exception(message)
+
+@Table("TURNSTILE_INFO")
+data class TurnstileEntity(
+    @Id var id: Long? = null,
+    @Column("LOCKED_B")
+    val locked: Boolean = true,
+    @Column("MESSAGE_S")
+    val message: String = ""
+) {
+    fun update(locked: Boolean? = null, message: String? = null) =
+        copy(locked = locked ?: this.locked, message = message ?: "")
+
+    fun toInfo() = TurnstileData(id!!, locked, message)
+}
+
+interface TurnstileRepository : CrudRepository<TurnstileEntity, Long>
+
+class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepository, id: Long) : TurnstileContext {
+    val turnstileInfo: TurnstileEntity
+
+    init {
+        turnstileInfo =
+            turnstileRepository.findById(id).orElseThrow { TurnstileInfoNotFound("TurnstileEntity $id not found") }
+    }
+
+    override val currentState: TurnstileState
+        get() = if (turnstileInfo.locked) LOCKED else UNLOCKED
+
+    override fun alarm(): TurnstileData? {
+        throw TurnstileAlarmException("Alarm")
+    }
+
+    override fun lock(): TurnstileData? {
+        return turnstileRepository.save(turnstileInfo.update(locked = true)).toInfo()
+    }
+
+    override fun unlock(): TurnstileData? {
+        return turnstileRepository.save(turnstileInfo.update(locked = false)).toInfo()
+    }
+
+    override fun returnCoin(): TurnstileData? {
+        return turnstileRepository.save(turnstileInfo.update(message = "Return Coin")).toInfo()
+    }
+}
+```
+
+We start by creating some turnstile entities:
+  
+### Start
+```bash
+http POST http://localhost:8080/
+```
+Should return:
+```json
+{
+    "_links": {
+        "coin": {
+            "href": "http://localhost:8080/1/coin"
+        },
+        "self": {
+            "href": "http://localhost:8080/1"
+        }
+    },
+    "currentState": "LOCKED",
+    "id": 1,
+    "locked": true,
+    "message": ""
+}
+```
+
+After calling is 5 times we can list the turnstiles
 
 ### Start
 ```bash
@@ -37,7 +135,6 @@ Should return:
                         "href": "http://localhost:8080/1"
                     }
                 },
-                "alarm": false,
                 "id": 1,
                 "locked": true,
                 "message": ""
@@ -51,7 +148,6 @@ Should return:
                         "href": "http://localhost:8080/2"
                     }
                 },
-                "alarm": false,
                 "id": 2,
                 "locked": true,
                 "message": ""
@@ -65,7 +161,6 @@ Should return:
                         "href": "http://localhost:8080/3"
                     }
                 },
-                "alarm": false,
                 "id": 3,
                 "locked": true,
                 "message": ""
@@ -79,7 +174,6 @@ Should return:
                         "href": "http://localhost:8080/4"
                     }
                 },
-                "alarm": false,
                 "id": 4,
                 "locked": true,
                 "message": ""
@@ -93,7 +187,6 @@ Should return:
                         "href": "http://localhost:8080/5"
                     }
                 },
-                "alarm": false,
                 "id": 5,
                 "locked": true,
                 "message": ""
@@ -122,7 +215,6 @@ Returns:
             "href": "http://localhost:8080/1"
         }
     },
-    "alarm": false,
     "id": 1,
     "locked": true,
     "message": ""
@@ -146,7 +238,6 @@ Should return:
             "href": "http://localhost:8080/1"
         }
     },
-    "alarm": false,
     "id": 1,
     "locked": false,
     "message": ""
@@ -168,7 +259,6 @@ Should return:
             "href": "http://localhost:8080/1"
         }
     },
-    "alarm": false,
     "id": 1,
     "locked": true,
     "message": ""
@@ -210,7 +300,6 @@ Should return:
             "href": "http://localhost:8080/1"
         }
     },
-    "alarm": false,
     "id": 1,
     "locked": false,
     "message": "Return Coin"

@@ -17,28 +17,28 @@ import javax.xml.bind.annotation.XmlRootElement
 
 @XmlRootElement
 @Relation(collectionRelation = "turnstiles")
-class TurnstileResource(info: TurnstileInfo, vararg links: Link) : EntityModel<TurnstileInfo>(info, *links)
+class TurnstileResource(data: TurnstileData, vararg links: Link) : EntityModel<TurnstileData>(data, *links)
 
 @Component
-class TurnstileResourceAssembler : RepresentationModelAssemblerSupport<TurnstileInfo, TurnstileResource>(TurnstileController::class.java, TurnstileResource::class.java) {
-    override fun toModel(entity: TurnstileInfo): TurnstileResource {
+class TurnstileResourceAssembler : RepresentationModelAssemblerSupport<TurnstileData, TurnstileResource>(TurnstileController::class.java, TurnstileResource::class.java) {
+    override fun toModel(entity: TurnstileData): TurnstileResource {
         val links = makelinks(entity)
         return TurnstileResource(entity, *links)
     }
 
-    fun toCollection(entities: Iterable<TurnstileInfo>): CollectionModel<TurnstileResource> {
+    fun toCollection(entities: Iterable<TurnstileData>): CollectionModel<TurnstileResource> {
         val result = CollectionModel(entities.map { toModel(it) })
         result.add(linkTo(methodOn(TurnstileController::class.java).list()).withSelfRel())
         return result
     }
 
-    private fun makelinks(entity: TurnstileInfo): Array<Link> {
+    private fun makelinks(entity: TurnstileData): Array<Link> {
         val links = mutableListOf(
             linkTo(methodOn(TurnstileController::class.java).get(entity.id)).withSelfRel()
         )
-        val fsm = TurnstileFSM(entity)
+        val possible = TurnstileFSM.possibleEvents(entity.currentState)
         TurnstileEvent.values().forEach { event ->
-            if (fsm.allowed(event)) {
+            if (possible.contains(event)) {
                 links.add(
                     linkTo(methodOn(TurnstileController::class.java).event(entity.id, event.name.toLowerCase()))
                         .withRel(event.name.toLowerCase())
@@ -51,30 +51,27 @@ class TurnstileResourceAssembler : RepresentationModelAssemblerSupport<Turnstile
 }
 
 @RestController
-class TurnstileController(val modelAssembler: TurnstileResourceAssembler) {
-    val turnstiles = (1..5).map { it to TurnstileInfo(it) }.toMap().toMutableMap()
+class TurnstileController(
+    private val modelAssembler: TurnstileResourceAssembler,
+    private val turnstileService: TurnstileService
+) {
     @GetMapping("/")
     fun list(): ResponseEntity<CollectionModel<TurnstileResource>> {
-        return ResponseEntity.ok(modelAssembler.toCollection(turnstiles.values))
+        return ResponseEntity.ok(modelAssembler.toCollection(turnstileService.list()))
+    }
+
+    @PostMapping("/")
+    fun create(): ResponseEntity<TurnstileResource> {
+        return ResponseEntity.ok(modelAssembler.toModel(turnstileService.create()))
     }
 
     @GetMapping("/{id}")
-    fun get(@PathVariable("id") id: Int): ResponseEntity<TurnstileResource> {
-        val turnstile = turnstiles[id]
-        return if (turnstile != null) {
-            ResponseEntity.ok(modelAssembler.toModel(turnstile))
-        } else {
-            ResponseEntity.notFound().build()
-        }
+    fun get(@PathVariable("id") id: Long): ResponseEntity<TurnstileResource> {
+        return ResponseEntity.ok(modelAssembler.toModel(turnstileService.get(id)))
     }
 
     @PostMapping("/{id}/{event}")
-    fun event(@PathVariable("id") id: Int, @PathVariable("event") event: String): ResponseEntity<TurnstileResource> {
-        val turnstile = turnstiles[id] ?: return ResponseEntity.notFound().build()
-        val fsm = TurnstileFSM(turnstile)
-        val result = fsm.event(event, turnstile)
-        require(result != null) { "Expected result" }
-        turnstiles[id] = result
-        return ResponseEntity.ok(modelAssembler.toModel(result))
+    fun event(@PathVariable("id") id: Long, @PathVariable("event") event: String): ResponseEntity<TurnstileResource> {
+        return ResponseEntity.ok(modelAssembler.toModel(turnstileService.event(id, event)))
     }
 }
