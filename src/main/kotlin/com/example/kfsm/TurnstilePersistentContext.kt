@@ -33,7 +33,7 @@ data class TurnstileEntity(
 interface TurnstileRepository : CrudRepository<TurnstileEntity, Long>
 
 class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepository, id: Long) : TurnstileContext {
-    val turnstileInfo: TurnstileEntity
+    var turnstileInfo: TurnstileEntity
 
     init {
         turnstileInfo =
@@ -48,14 +48,17 @@ class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepos
     }
 
     override fun lock(): TurnstileData? {
-        return turnstileRepository.save(turnstileInfo.update(locked = true)).toInfo()
+        turnstileInfo = turnstileRepository.save(turnstileInfo.update(locked = true))
+        return turnstileInfo.toInfo()
     }
 
     override fun unlock(): TurnstileData? {
-        return turnstileRepository.save(turnstileInfo.update(locked = false)).toInfo()
+        turnstileInfo = turnstileRepository.save(turnstileInfo.update(locked = false))
+        return turnstileInfo.toInfo()
     }
 
     override fun returnCoin(): TurnstileData? {
-        return turnstileRepository.save(turnstileInfo.update(message = "Return Coin")).toInfo()
+        turnstileInfo = turnstileRepository.save(turnstileInfo.update(message = "Return Coin"))
+        return turnstileInfo.toInfo()
     }
 }
