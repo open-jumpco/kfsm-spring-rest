@@ -42,10 +42,8 @@ class TurnstileResourceAssembler : RepresentationModelAssemblerSupport<Turnstile
                     .withRel(event)
             )
         }
+        return links.toTypedArray()
     }
-
-    return links.toTypedArray()
-}
 }
 
 @RestController

@@ -65,8 +65,7 @@ class TurnstileFSM(context: TurnstileContext) {
                 onEvent(PASS to LOCKED) {
                     lock()
                 }
-                onEvent(COIN) { info ->
-                    require(info != null) { "Info required" }
+                onEvent(COIN) {
                     returnCoin()
                 }
             }
