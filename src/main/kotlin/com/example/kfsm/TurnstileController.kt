@@ -36,18 +36,16 @@ class TurnstileResourceAssembler : RepresentationModelAssemblerSupport<Turnstile
         val links = mutableListOf(
             linkTo(methodOn(TurnstileController::class.java).get(entity.id)).withSelfRel()
         )
-        val possible = TurnstileFSM.possibleEvents(entity.currentState)
-        TurnstileEvent.values().forEach { event ->
-            if (possible.contains(event)) {
-                links.add(
-                    linkTo(methodOn(TurnstileController::class.java).event(entity.id, event.name.toLowerCase()))
-                        .withRel(event.name.toLowerCase())
-                )
-            }
+        TurnstileService.possibleEvents(entity).forEach { event ->
+            links.add(
+                linkTo(methodOn(TurnstileController::class.java).event(entity.id, event))
+                    .withRel(event)
+            )
         }
-
-        return links.toTypedArray()
     }
+
+    return links.toTypedArray()
+}
 }
 
 @RestController

@@ -21,4 +21,9 @@ class TurnstileService(private val turnstileRepository: TurnstileRepository) {
         val fsm = TurnstileFSM(TurnstilePersistentContext(turnstileRepository, id))
         return fsm.event(event) ?: error("Expected result from event")
     }
+    companion object {
+        fun possibleEvents(data: TurnstileData): Set<String> {
+            return TurnstileFSM.possibleEvents(data.currentState).map { it.name.toLowerCase() }.toSet()
+        }
+    }
 }
