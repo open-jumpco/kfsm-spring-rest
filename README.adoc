@@ -7,7 +7,7 @@ A simple application to demonstrate implementing link:https://github.com/open-ju
 ./gradlew bootRun
 ----
 
-== Operation
+== Description
 
 When designing a FSM careful consideration of how the state is externalised is important.
 It is advisable that the type used to represent the state in the definition also be the type persisted by the domain entity or at least
@@ -95,9 +95,11 @@ class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepos
 }
 ----
 
+== Operations
+
 We start by creating some turnstile entities:
   
-=== Start
+=== Create
 [source,bash]
 ----
 http POST http://localhost:8080/
@@ -124,7 +126,7 @@ Should return:
 
 After calling is 5 times we can list the turnstiles
 
-=== Start
+=== List
 [source,bash]
 ----
 http http://localhost:8080/
@@ -211,7 +213,7 @@ Should return:
 }
 ----
 
-=== Check
+=== Read
 [source,bash]
 ----
 http http://localhost:8080/1
@@ -286,7 +288,7 @@ Should return:
 }
 ----
 
-=== Invalid transition
+=== Invalid pass event
 [source,bash]
 ----
 http POST http://localhost:8080/1/pass
