@@ -1,11 +1,13 @@
-# KFSM Turnstile Sample for Spring HATEOAS
+= KFSM Turnstile Sample for Spring HATEOAS
 
-A simple application to demonstrate implementing [KFSM](https://github.com/open-jumpco/kfsm) with the classic Turnstile FSM.
+A simple application to demonstrate implementing link:https://github.com/open-jumpco/kfsm[KFSM] with the classic Turnstile FSM.
 
-```bash
+[source,bash]
+----
 ./gradlew bootRun
-```
-## Operation
+----
+
+== Operation
 
 When designing a FSM careful consideration of how the state is externalised is important.
 It is advisable that the type used to represent the state in the definition also be the type persisted by the domain entity or at least
@@ -17,7 +19,8 @@ The FSM definition uses `TurnstileContext` to represent the operations and deter
 
 The domain class `TurnstileData` is a representation of the state of the Turnstile for external use and is return from the event.
 
-```kotlin
+[source,kotlin]
+----
 data class TurnstileData(
     val id: Long,
     val locked: Boolean,
@@ -34,12 +37,13 @@ interface TurnstileContext {
     fun unlock(): TurnstileData?
     fun returnCoin(): TurnstileData?
 }
-```
+----
 
 We extend the `TurnstileContext` to create a persistent context using 
-[Spring Data JDBC](https://spring.io/projects/spring-data-jdbc)
+link:https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]
 
-```kotlin
+[source,kotlin]
+----
 @ResponseStatus(CONFLICT)
 class TurnstileAlarmException(message: String) : Exception(message)
 
@@ -89,16 +93,19 @@ class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepos
         return turnstileRepository.save(turnstileInfo.update(message = "Return Coin")).toInfo()
     }
 }
-```
+----
 
 We start by creating some turnstile entities:
   
-### Start
-```bash
+=== Start
+[source,bash]
+----
 http POST http://localhost:8080/
-```
+----
+
 Should return:
-```json
+[source,json]
+----
 {
     "_links": {
         "coin": {
@@ -113,16 +120,19 @@ Should return:
     "locked": true,
     "message": ""
 }
-```
+----
 
 After calling is 5 times we can list the turnstiles
 
-### Start
-```bash
+=== Start
+[source,bash]
+----
 http http://localhost:8080/
-```
+----
+
 Should return:
-```json
+[source,json]
+----
 {
     "_embedded": {
         "turnstileInfoList": [
@@ -199,13 +209,17 @@ Should return:
         }
     }
 }
-```
-### Check
-```bash
+----
+
+=== Check
+[source,bash]
+----
 http http://localhost:8080/1
-```
+----
+
 Returns:
-```json
+[source,json]
+----
 {
     "_links": {
         "coin": {
@@ -219,13 +233,17 @@ Returns:
     "locked": true,
     "message": ""
 }
-```
-### Coin
-```bash
+----
+
+=== Coin
+[source,bash]
+----
 http POST http://localhost:8080/1/coin
-```
+----
+
 Should return:
-```json
+[source,json]
+----
 {
     "_links": {
         "coin": {
@@ -242,14 +260,17 @@ Should return:
     "locked": false,
     "message": ""
 }
-```
+----
 
-### Pass
-```bash
+=== Pass
+[source,bash]
+----
 http POST http://localhost:8080/1/pass
-```
+----
+
 Should return:
-```json
+[source,json]
+----
 {
     "_links": {
         "coin": {
@@ -263,15 +284,18 @@ Should return:
     "locked": true,
     "message": ""
 }
-```
+----
 
-### Invalid transition
-```bash
+=== Invalid transition
+[source,bash]
+----
 http POST http://localhost:8080/1/pass
-```
+----
+
 The system throws `TurnstileAlarmException` which results in 409 - Conflict
 
-```json
+[source,json]
+----
 {
     "error": "Conflict",
     "message": "Alarm",
@@ -280,14 +304,16 @@ The system throws `TurnstileAlarmException` which results in 409 - Conflict
     "timestamp": "2020-01-30T21:06:05.491+0000",
     "trace": "com.example.kfsm.TurnstileAlarmException: Alarm\r\n\tat com.example.kfsm.TurnstileFSM$Companion$definition$1$2$1.invoke(Turnstile.kt:49)\r\n\tat com.example.kfsm.TurnstileFSM$Companion$definition$1$2$1.invoke(Turnstile.kt:38)\r\n\tat io.jumpco.open.kfsm.StateMapInstance.executeDefaultAction(StateMapInstance.kt:61)\r\n\tat io.jumpco.open.kfsm.StateMapInstance.sendEvent(StateMapInstance.kt:85)\r\n\tat io.jumpco.open.kfsm.StateMachineInstance.sendEvent(StateMachineInstance.kt:152)\r\n\tat com.example.kfsm.TurnstileFSM.pass(Turnstile.kt:35)\r\n\tat com.example.kfsm.TurnstileController.pass(TurnstileController.kt:92)\r\n\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\r\n\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\r\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\r\n\tat java.lang.reflect.Method.invoke(Method.java:498)\r\n\tat org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:190)\r\n\tat org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:138)\r\n\tat org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:106)\r\n\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:888)\r\n\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:793)\r\n\tat org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)\r\n\tat org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1040)\r\n\tat org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:943)\r\n\tat org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006)\r\n\tat org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:909)\r\n\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:660)\r\n\tat org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:883)\r\n\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:741)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:231)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\r\n\tat org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\r\n\tat org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)\r\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\r\n\tat org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)\r\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\r\n\tat org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)\r\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\r\n\tat org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:202)\r\n\tat org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:96)\r\n\tat org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:541)\r\n\tat org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:139)\r\n\tat org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:92)\r\n\tat org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)\r\n\tat org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:343)\r\n\tat org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:367)\r\n\tat org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:65)\r\n\tat org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:860)\r\n\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1598)\r\n\tat org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49)\r\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\r\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\r\n\tat org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)\r\n\tat java.lang.Thread.run(Thread.java:748)\r\n"
 }
-```
+----
 
-### Coin when unlocked
-```bash
+=== Coin when unlocked
+[source,bash]
+----
 http POST http://localhost:8080/1/coin 
-```
+----
 Should return:
-```json
+[source,json]
+----
 {
     "_links": {
         "coin": {
@@ -304,4 +330,35 @@ Should return:
     "locked": false,
     "message": "Return Coin"
 }
-```
+----
+
+== Generated State Table
+
+=== TurnstileFSM State Map
+
+|===
+| Start | Event[Guard] | Target | Action
+
+| LOCKED
+| COIN
+| UNLOCKED
+|  `{unlock()}`
+
+| UNLOCKED
+| PASS
+| LOCKED
+|  `{lock()}`
+
+| UNLOCKED
+| COIN
+| UNLOCKED
+|  `{returnCoin()}`
+|===
+
+== Generated State Diagram
+
+image:turnstile.png[]
+
+To learn more about visualization visit link:https://github.com/open-jumpco/kfsm-viz[kfsm-viz] and
+link:https://github.com/open-jumpco/kfsm-viz-plugin[kfsm-viz-plugin]
+
