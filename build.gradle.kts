@@ -4,7 +4,7 @@ plugins {
     id("io.spring.dependency-management") version "1.0.9.RELEASE"
     kotlin("jvm") version "1.3.61"
     kotlin("plugin.spring") version "1.3.61"
-    id("io.jumpco.open.kfsm.viz-plugin") version "1.0.7"
+    id("io.jumpco.open.kfsm.viz-plugin") version "1.0.9"
 }
 
 group = "com.example"
