@@ -7,16 +7,19 @@ import org.springframework.hateoas.server.core.Relation
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import javax.xml.bind.annotation.XmlRootElement
 
 @XmlRootElement
-@Relation(collectionRelation = "turnstiles")
+@Relation(itemRelation = "turnstile", collectionRelation = "turnstiles")
 class TurnstileResource(data: TurnstileData, vararg links: Link) : EntityModel<TurnstileData>(data, *links)
 
 @Component
@@ -47,6 +50,8 @@ class TurnstileResourceAssembler : RepresentationModelAssemblerSupport<Turnstile
 }
 
 @RestController
+@CrossOrigin(origins = ["*"])
+@RequestMapping("/turnstile", produces = [MediaType.APPLICATION_JSON_VALUE])
 class TurnstileController(
     private val modelAssembler: TurnstileResourceAssembler,
     private val turnstileService: TurnstileService

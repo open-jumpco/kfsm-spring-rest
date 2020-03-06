@@ -6,6 +6,7 @@ import com.example.kfsm.TurnstileState.LOCKED
 import com.example.kfsm.TurnstileState.UNLOCKED
 import io.jumpco.open.kfsm.stateMachine
 
+
 data class TurnstileData(
     val id: Long,
     val locked: Boolean,

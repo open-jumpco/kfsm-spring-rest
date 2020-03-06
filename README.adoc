@@ -98,11 +98,17 @@ class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepos
 == Operations
 
 We start by creating some turnstile entities:
-  
+
+=== ApiList
+[source,bash]
+----
+http http://localhost:8080/
+----
+
 === Create
 [source,bash]
 ----
-http POST http://localhost:8080/
+http POST http://localhost:8080/turnsile/
 ----
 
 Should return:
@@ -111,10 +117,10 @@ Should return:
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/1/coin"
+            "href": "http://localhost:8080/turnsile/1/coin"
         },
         "self": {
-            "href": "http://localhost:8080/1"
+            "href": "http://localhost:8080/turnsile/1"
         }
     },
     "currentState": "LOCKED",
@@ -129,7 +135,7 @@ After calling is 5 times we can list the turnstiles
 === List
 [source,bash]
 ----
-http http://localhost:8080/
+http http://localhost:8080/turnsile/
 ----
 
 Should return:
@@ -141,10 +147,10 @@ Should return:
             {
                 "_links": {
                     "coin": {
-                        "href": "http://localhost:8080/1/coin"
+                        "href": "http://localhost:8080/turnsile/1/coin"
                     },
                     "self": {
-                        "href": "http://localhost:8080/1"
+                        "href": "http://localhost:8080/turnsile/1"
                     }
                 },
                 "id": 1,
@@ -154,10 +160,10 @@ Should return:
             {
                 "_links": {
                     "coin": {
-                        "href": "http://localhost:8080/2/coin"
+                        "href": "http://localhost:8080/turnsile/2/coin"
                     },
                     "self": {
-                        "href": "http://localhost:8080/2"
+                        "href": "http://localhost:8080/turnsile/2"
                     }
                 },
                 "id": 2,
@@ -167,10 +173,10 @@ Should return:
             {
                 "_links": {
                     "coin": {
-                        "href": "http://localhost:8080/3/coin"
+                        "href": "http://localhost:8080/turnsile/3/coin"
                     },
                     "self": {
-                        "href": "http://localhost:8080/3"
+                        "href": "http://localhost:8080/turnsile/3"
                     }
                 },
                 "id": 3,
@@ -180,10 +186,10 @@ Should return:
             {
                 "_links": {
                     "coin": {
-                        "href": "http://localhost:8080/4/coin"
+                        "href": "http://localhost:8080/turnsile/4/coin"
                     },
                     "self": {
-                        "href": "http://localhost:8080/4"
+                        "href": "http://localhost:8080/turnsile/4"
                     }
                 },
                 "id": 4,
@@ -193,10 +199,10 @@ Should return:
             {
                 "_links": {
                     "coin": {
-                        "href": "http://localhost:8080/5/coin"
+                        "href": "http://localhost:8080/turnsile/5/coin"
                     },
                     "self": {
-                        "href": "http://localhost:8080/5"
+                        "href": "http://localhost:8080/turnsile/5"
                     }
                 },
                 "id": 5,
@@ -207,7 +213,7 @@ Should return:
     },
     "_links": {
         "self": {
-            "href": "http://localhost:8080/"
+            "href": "http://localhost:8080/turnsile/"
         }
     }
 }
@@ -216,7 +222,7 @@ Should return:
 === Read
 [source,bash]
 ----
-http http://localhost:8080/1
+http http://localhost:8080/turnsile/1
 ----
 
 Returns:
@@ -225,10 +231,10 @@ Returns:
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/1/coin"
+            "href": "http://localhost:8080/turnsile/1/coin"
         },
         "self": {
-            "href": "http://localhost:8080/1"
+            "href": "http://localhost:8080/turnsile/1"
         }
     },
     "id": 1,
@@ -240,7 +246,7 @@ Returns:
 === Coin
 [source,bash]
 ----
-http POST http://localhost:8080/1/coin
+http POST http://localhost:8080/turnsile/1/coin
 ----
 
 Should return:
@@ -249,13 +255,13 @@ Should return:
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/1/coin"
+            "href": "http://localhost:8080/turnsile/1/coin"
         },
         "pass": {
-            "href": "http://localhost:8080/1/pass"
+            "href": "http://localhost:8080/turnsile/1/pass"
         },
         "self": {
-            "href": "http://localhost:8080/1"
+            "href": "http://localhost:8080/turnsile/1"
         }
     },
     "id": 1,
@@ -267,7 +273,7 @@ Should return:
 === Pass
 [source,bash]
 ----
-http POST http://localhost:8080/1/pass
+http POST http://localhost:8080/turnsile/1/pass
 ----
 
 Should return:
@@ -276,10 +282,10 @@ Should return:
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/1/coin"
+            "href": "http://localhost:8080/turnsile/1/coin"
         },
         "self": {
-            "href": "http://localhost:8080/1"
+            "href": "http://localhost:8080/turnsile/1"
         }
     },
     "id": 1,
@@ -291,7 +297,7 @@ Should return:
 === Invalid pass event
 [source,bash]
 ----
-http POST http://localhost:8080/1/pass
+http POST http://localhost:8080/turnsile/1/pass
 ----
 
 The system throws `TurnstileAlarmException` which results in 409 - Conflict
@@ -311,7 +317,7 @@ The system throws `TurnstileAlarmException` which results in 409 - Conflict
 === Coin when unlocked
 [source,bash]
 ----
-http POST http://localhost:8080/1/coin 
+http POST http://localhost:8080/turnsile/1/coin 
 ----
 Should return:
 [source,json]
@@ -319,13 +325,13 @@ Should return:
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/1/coin"
+            "href": "http://localhost:8080/turnsile/1/coin"
         },
         "pass": {
-            "href": "http://localhost:8080/1/pass"
+            "href": "http://localhost:8080/turnsile/1/pass"
         },
         "self": {
-            "href": "http://localhost:8080/1"
+            "href": "http://localhost:8080/turnsile/1"
         }
     },
     "id": 1,
