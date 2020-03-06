@@ -10,8 +10,7 @@ A simple application to demonstrate implementing link:https://github.com/open-ju
 == Description
 
 When designing a FSM careful consideration of how the state is externalised is important.
-It is advisable that the type used to represent the state in the definition also be the type persisted by the domain entity or at least
- providing a consistent bi-directional conversion.
+It is advisable that the type used to represent the state in the definition also be the type persisted by the domain entity or at least providing a consistent bi-directional conversion.
 
 In the Turnstile example we are only concerned with 2 states so a `Boolean` is an acceptible standin.
 
@@ -39,7 +38,7 @@ interface TurnstileContext {
 }
 ----
 
-We extend the `TurnstileContext` to create a persistent context using 
+We extend the `TurnstileContext` to create a persistent context using
 link:https://spring.io/projects/spring-data-jdbc[Spring Data JDBC]
 
 [source,kotlin]
@@ -95,32 +94,47 @@ class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepos
 }
 ----
 
+== UI
+
+A Web UI is available at link:https://github.com/open-jumpco/kfsm-hateoas-client[kfsm-hateoas-client]
+
 == Operations
 
-We start by creating some turnstile entities:
+This section describes the various operations.
+
+We can obtain a list of top level API operations.
 
 === ApiList
+
 [source,bash]
 ----
 http http://localhost:8080/
 ----
 
+Only `list` and `create` are available at the top level.
+All other operations apply to specific turnstile resources and those resources
+contain the embedded links for performing the options.
+
+We start by creating some turnstile entities:
+
 === Create
+
 [source,bash]
 ----
-http POST http://localhost:8080/turnsile/
+http POST http://localhost:8080/turnstile/
 ----
 
 Should return:
+
 [source,json]
 ----
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/turnsile/1/coin"
+            "href": "http://localhost:8080/turnstile/1/coin"
         },
         "self": {
-            "href": "http://localhost:8080/turnsile/1"
+            "href": "http://localhost:8080/turnstile/1"
         }
     },
     "currentState": "LOCKED",
@@ -133,24 +147,26 @@ Should return:
 After calling is 5 times we can list the turnstiles
 
 === List
+
 [source,bash]
 ----
-http http://localhost:8080/turnsile/
+http http://localhost:8080/turnstile/
 ----
 
 Should return:
+
 [source,json]
 ----
 {
     "_embedded": {
-        "turnstileInfoList": [
+        "turnstileDataList": [
             {
                 "_links": {
                     "coin": {
-                        "href": "http://localhost:8080/turnsile/1/coin"
+                        "href": "http://localhost:8080/turnstile/1/coin"
                     },
                     "self": {
-                        "href": "http://localhost:8080/turnsile/1"
+                        "href": "http://localhost:8080/turnstile/1"
                     }
                 },
                 "id": 1,
@@ -160,10 +176,10 @@ Should return:
             {
                 "_links": {
                     "coin": {
-                        "href": "http://localhost:8080/turnsile/2/coin"
+                        "href": "http://localhost:8080/turnstile/2/coin"
                     },
                     "self": {
-                        "href": "http://localhost:8080/turnsile/2"
+                        "href": "http://localhost:8080/turnstile/2"
                     }
                 },
                 "id": 2,
@@ -173,10 +189,10 @@ Should return:
             {
                 "_links": {
                     "coin": {
-                        "href": "http://localhost:8080/turnsile/3/coin"
+                        "href": "http://localhost:8080/turnstile/3/coin"
                     },
                     "self": {
-                        "href": "http://localhost:8080/turnsile/3"
+                        "href": "http://localhost:8080/turnstile/3"
                     }
                 },
                 "id": 3,
@@ -186,10 +202,10 @@ Should return:
             {
                 "_links": {
                     "coin": {
-                        "href": "http://localhost:8080/turnsile/4/coin"
+                        "href": "http://localhost:8080/turnstile/4/coin"
                     },
                     "self": {
-                        "href": "http://localhost:8080/turnsile/4"
+                        "href": "http://localhost:8080/turnstile/4"
                     }
                 },
                 "id": 4,
@@ -199,10 +215,10 @@ Should return:
             {
                 "_links": {
                     "coin": {
-                        "href": "http://localhost:8080/turnsile/5/coin"
+                        "href": "http://localhost:8080/turnstile/5/coin"
                     },
                     "self": {
-                        "href": "http://localhost:8080/turnsile/5"
+                        "href": "http://localhost:8080/turnstile/5"
                     }
                 },
                 "id": 5,
@@ -213,28 +229,32 @@ Should return:
     },
     "_links": {
         "self": {
-            "href": "http://localhost:8080/turnsile/"
+            "href": "http://localhost:8080/turnstile/"
         }
     }
 }
 ----
 
 === Read
+
+This uses the `self` link from the resource.
+
 [source,bash]
 ----
-http http://localhost:8080/turnsile/1
+http http://localhost:8080/turnstile/1
 ----
 
 Returns:
+
 [source,json]
 ----
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/turnsile/1/coin"
+            "href": "http://localhost:8080/turnstile/1/coin"
         },
         "self": {
-            "href": "http://localhost:8080/turnsile/1"
+            "href": "http://localhost:8080/turnstile/1"
         }
     },
     "id": 1,
@@ -244,24 +264,26 @@ Returns:
 ----
 
 === Coin
+
 [source,bash]
 ----
-http POST http://localhost:8080/turnsile/1/coin
+http POST http://localhost:8080/turnstile/1/coin
 ----
 
 Should return:
+
 [source,json]
 ----
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/turnsile/1/coin"
+            "href": "http://localhost:8080/turnstile/1/coin"
         },
         "pass": {
-            "href": "http://localhost:8080/turnsile/1/pass"
+            "href": "http://localhost:8080/turnstile/1/pass"
         },
         "self": {
-            "href": "http://localhost:8080/turnsile/1"
+            "href": "http://localhost:8080/turnstile/1"
         }
     },
     "id": 1,
@@ -271,21 +293,23 @@ Should return:
 ----
 
 === Pass
+
 [source,bash]
 ----
-http POST http://localhost:8080/turnsile/1/pass
+http POST http://localhost:8080/turnstile/1/pass
 ----
 
 Should return:
+
 [source,json]
 ----
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/turnsile/1/coin"
+            "href": "http://localhost:8080/turnstile/1/coin"
         },
         "self": {
-            "href": "http://localhost:8080/turnsile/1"
+            "href": "http://localhost:8080/turnstile/1"
         }
     },
     "id": 1,
@@ -295,9 +319,10 @@ Should return:
 ----
 
 === Invalid pass event
+
 [source,bash]
 ----
-http POST http://localhost:8080/turnsile/1/pass
+http POST http://localhost:8080/turnstile/1/pass
 ----
 
 The system throws `TurnstileAlarmException` which results in 409 - Conflict
@@ -315,23 +340,26 @@ The system throws `TurnstileAlarmException` which results in 409 - Conflict
 ----
 
 === Coin when unlocked
+
 [source,bash]
 ----
-http POST http://localhost:8080/turnsile/1/coin 
+http POST http://localhost:8080/turnstile/1/coin
 ----
+
 Should return:
+
 [source,json]
 ----
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/turnsile/1/coin"
+            "href": "http://localhost:8080/turnstile/1/coin"
         },
         "pass": {
-            "href": "http://localhost:8080/turnsile/1/pass"
+            "href": "http://localhost:8080/turnstile/1/pass"
         },
         "self": {
-            "href": "http://localhost:8080/turnsile/1"
+            "href": "http://localhost:8080/turnstile/1"
         }
     },
     "id": 1,
