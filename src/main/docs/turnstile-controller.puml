@@ -1,0 +1,34 @@
+@startuml
+
+class TurnstileData <<data>> {
+}
+
+class TurnstileService {
+    create(): TurnstileData
+    get(id: Long): TurnstileData
+    list(pageable: Pageable): Page<TurnstileData>
+    event(id: Long, event: String): TurnstileData
+    delete(id: Long)
+    possibleEvents(data: TurnstileData): Set<String>
+}
+TurnstileService ..left..> TurnstileData
+
+class TurnstileRepresentationModelAssembler {
+    toModel(item: TurnstileData): EntityModel<TurnstileData>
+    toPage(page: Page<TurnstileData>): PagedModel<EntityModel<TurnstileData>>
+}
+TurnstileRepresentationModelAssembler ..> TurnstileData
+
+class TurnstileController {
+    list(pageable: Pageable): ResponseEntity<PagedModel<EntityModel<TurnstileData>>>
+    create(): ResponseEntity<EntityModel<TurnstileData>>
+    get(id: Long): ResponseEntity<EntityModel<TurnstileData>>
+    event(id: Long, event: String): ResponseEntity<EntityModel<TurnstileData>>
+    delete(@PathVariable("id") id: Long): ResponseEntity<Void>
+}
+
+TurnstileController --> TurnstileService: turnstileService
+TurnstileController --> TurnstileRepresentationModelAssembler: representationAssembler
+
+
+@enduml

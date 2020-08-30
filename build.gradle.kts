@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
-    id("org.springframework.boot") version "2.2.7.RELEASE"
-    id("io.spring.dependency-management") version "1.0.9.RELEASE"
+    id("org.springframework.boot") version "2.3.3.RELEASE"
+    id("io.spring.dependency-management") version "1.0.10.RELEASE"
     kotlin("jvm") version "1.3.72"
     kotlin("plugin.spring") version "1.3.72"
     id("io.jumpco.open.kfsm.viz-plugin") version "1.0.9"
@@ -9,18 +9,13 @@ plugins {
 
 group = "com.example"
 version = "0.0.1-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_1_8
-
-val developmentOnly by configurations.creating
-configurations {
-    runtimeClasspath {
-        extendsFrom(developmentOnly)
-    }
-}
+java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenLocal()
+    jcenter()
     mavenCentral()
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 dependencies {
@@ -28,13 +23,19 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-hateoas")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+    implementation("org.springdoc:springdoc-openapi-ui:1.4.4")
+    implementation("org.springdoc:springdoc-openapi-hateoas:1.4.4")
+    implementation("org.springdoc:springdoc-openapi-kotlin:1.4.4")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
     runtimeOnly("com.h2database:h2:1.4.200")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
@@ -59,7 +60,7 @@ val assemble by tasks.existing {
 configure<io.jumpco.open.kfsm.gradle.VizPluginExtension> {
     fsm("TurnstileFSM") {
         outputFolder = file("generated")
-        input = file("src/main/kotlin/com/example/kfsm/Turnstile.kt")
+        input = file("src/main/kotlin/com/example/kfsm/TurnstileFSM.kt")
         isGeneratePlantUml = true // Required default is false
         isGenerateAsciidoc = true // Required default is false
         output = "turnstile"

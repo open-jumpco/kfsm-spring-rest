@@ -1,0 +1,67 @@
+@startuml
+
+class TurnstileData {
+    id: Long
+    locked: Boolean
+    message: String
+}
+
+interface TurnstileContext {
+    currentState: TurnstileState
+    alarm(): TurnstileData
+    lock(): TurnstileData
+    unlock(): TurnstileData
+    returnCoin(): TurnstileData
+}
+
+TurnstileContext ..> TurnstileData
+
+class TurnstileFSM {
+    event(event: String): TurnstileData
+    coin(): TurnstileData
+    pass(): TurnstileData
+    allowed(event: TurnstileEvent): boolean
+}
+
+
+TurnstileFSM ..> TurnstileContext
+
+class TurnstilePersistentContext {
+}
+
+TurnstilePersistentContext <|--left-- TurnstileContext
+
+interface PagingAndSortingRepository<T, K> {
+    findAll(pageable: Pageable): Page<T>
+}
+
+class TurnstileEntity <<entity>> {
+    id: Long
+    locked: Boolean
+    message: String
+    toInfo(): TurnstileData
+}
+
+interface TurnstileRepository <<repository>> {
+}
+
+TurnstileRepository <|-down- PagingAndSortingRepository
+TurnstileRepository ..> TurnstileEntity: <<realize>>
+
+TurnstilePersistentContext -right-> TurnstileRepository: repository
+TurnstilePersistentContext --> TurnstileEntity: entity
+
+class TurnstileService {
+    create(): TurnstileData
+    get(id: Long): TurnstileData
+    list(pageable: Pageable): Page<TurnstileData>
+    event(id: Long, event: String): TurnstileData
+    delete(id: Long)
+    possibleEvents(data: TurnstileData): Set<String>
+}
+
+TurnstileService ..left..> TurnstileFSM
+TurnstileService ..> TurnstilePersistentContext
+TurnstileEntity .left.> TurnstileData
+
+@enduml

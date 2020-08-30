@@ -2,13 +2,17 @@ package com.example.kfsm
 
 import com.example.kfsm.TurnstileState.LOCKED
 import com.example.kfsm.TurnstileState.UNLOCKED
-import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
-import org.springframework.data.repository.CrudRepository
+
+import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.web.bind.annotation.ResponseStatus
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType.AUTO
+import javax.persistence.Id
+import javax.persistence.Table
 
 @ResponseStatus(CONFLICT)
 class TurnstileAlarmException(message: String) : Exception(message)
@@ -16,13 +20,14 @@ class TurnstileAlarmException(message: String) : Exception(message)
 @ResponseStatus(NOT_FOUND)
 class TurnstileInfoNotFound(message: String) : Exception(message)
 
-@Table("TURNSTILE_INFO")
+@Table(name = "TURNSTILE_INFO")
+@Entity
 data class TurnstileEntity(
-    @Id var id: Long? = null,
-    @Column("LOCKED_B")
-    val locked: Boolean = true,
-    @Column("MESSAGE_S")
-    val message: String = ""
+        @Id @GeneratedValue(strategy = AUTO) var id: Long? = null,
+        @Column(name = "LOCKED_B")
+        val locked: Boolean = true,
+        @Column(name = "MESSAGE_S")
+        val message: String = ""
 ) {
     fun update(locked: Boolean? = null, message: String? = null) =
         copy(locked = locked ?: this.locked, message = message ?: "")
@@ -30,35 +35,35 @@ data class TurnstileEntity(
     fun toInfo() = TurnstileData(id!!, locked, message)
 }
 
-interface TurnstileRepository : CrudRepository<TurnstileEntity, Long>
+interface TurnstileRepository : PagingAndSortingRepository<TurnstileEntity, Long> {
+}
 
-class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepository, id: Long) : TurnstileContext {
-    var turnstileInfo: TurnstileEntity
+class TurnstilePersistentContext(private val repository: TurnstileRepository, id: Long) : TurnstileContext {
+    var entity: TurnstileEntity
 
     init {
-        turnstileInfo =
-            turnstileRepository.findById(id).orElseThrow { TurnstileInfoNotFound("TurnstileEntity $id not found") }
+        entity = repository.findById(id).orElseThrow { TurnstileInfoNotFound("TurnstileEntity $id not found") }
     }
 
     override val currentState: TurnstileState
-        get() = if (turnstileInfo.locked) LOCKED else UNLOCKED
+        get() = if (entity.locked) LOCKED else UNLOCKED
 
     override fun alarm(): TurnstileData? {
         throw TurnstileAlarmException("Alarm")
     }
 
     override fun lock(): TurnstileData? {
-        turnstileInfo = turnstileRepository.save(turnstileInfo.update(locked = true))
-        return turnstileInfo.toInfo()
+        entity = repository.save(entity.update(locked = true))
+        return entity.toInfo()
     }
 
     override fun unlock(): TurnstileData? {
-        turnstileInfo = turnstileRepository.save(turnstileInfo.update(locked = false))
-        return turnstileInfo.toInfo()
+        entity = repository.save(entity.update(locked = false))
+        return entity.toInfo()
     }
 
     override fun returnCoin(): TurnstileData? {
-        turnstileInfo = turnstileRepository.save(turnstileInfo.update(message = "Return Coin"))
-        return turnstileInfo.toInfo()
+        entity = repository.save(entity.update(message = "Return Coin"))
+        return entity.toInfo()
     }
 }

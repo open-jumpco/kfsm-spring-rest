@@ -3,7 +3,8 @@ package com.example.kfsm
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
-import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+
 import org.springframework.hateoas.config.EnableHypermediaSupport
 import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder
@@ -12,7 +13,7 @@ import javax.sql.DataSource
 
 @SpringBootApplication
 @EnableHypermediaSupport(type = [HypermediaType.HAL])
-@EnableJdbcRepositories
+@EnableJpaRepositories
 class KfsmApplication {
     @Bean
     fun dataSource(): DataSource? {

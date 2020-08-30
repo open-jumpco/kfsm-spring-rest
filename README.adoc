@@ -50,6 +50,7 @@ class TurnstileAlarmException(message: String) : Exception(message)
 class TurnstileInfoNotFound(message: String) : Exception(message)
 
 @Table("TURNSTILE_INFO")
+@Entity
 data class TurnstileEntity(
     @Id var id: Long? = null,
     @Column("LOCKED_B")
@@ -158,80 +159,106 @@ Should return:
 [source,json]
 ----
 {
-    "_embedded": {
-        "turnstileDataList": [
-            {
-                "_links": {
-                    "coin": {
-                        "href": "http://localhost:8080/turnstile/1/coin"
-                    },
-                    "self": {
-                        "href": "http://localhost:8080/turnstile/1"
-                    }
-                },
-                "id": 1,
-                "locked": true,
-                "message": ""
-            },
-            {
-                "_links": {
-                    "coin": {
-                        "href": "http://localhost:8080/turnstile/2/coin"
-                    },
-                    "self": {
-                        "href": "http://localhost:8080/turnstile/2"
-                    }
-                },
-                "id": 2,
-                "locked": true,
-                "message": ""
-            },
-            {
-                "_links": {
-                    "coin": {
-                        "href": "http://localhost:8080/turnstile/3/coin"
-                    },
-                    "self": {
-                        "href": "http://localhost:8080/turnstile/3"
-                    }
-                },
-                "id": 3,
-                "locked": true,
-                "message": ""
-            },
-            {
-                "_links": {
-                    "coin": {
-                        "href": "http://localhost:8080/turnstile/4/coin"
-                    },
-                    "self": {
-                        "href": "http://localhost:8080/turnstile/4"
-                    }
-                },
-                "id": 4,
-                "locked": true,
-                "message": ""
-            },
-            {
-                "_links": {
-                    "coin": {
-                        "href": "http://localhost:8080/turnstile/5/coin"
-                    },
-                    "self": {
-                        "href": "http://localhost:8080/turnstile/5"
-                    }
-                },
-                "id": 5,
-                "locked": true,
-                "message": ""
-            }
-        ]
-    },
-    "_links": {
-        "self": {
-            "href": "http://localhost:8080/turnstile/"
+  "_embedded": {
+    "turnstiles": [
+      {
+        "id": 1,
+        "locked": true,
+        "message": "",
+        "currentState": "LOCKED",
+        "_links": {
+          "self": {
+            "href": "http://localhost:8080/api/turnstile/1"
+          },
+          "delete": {
+            "href": "http://localhost:8080/api/turnstile/1"
+          },
+          "coin": {
+            "href": "http://localhost:8080/api/turnstile/1/coin"
+          }
         }
+      },
+      {
+        "id": 2,
+        "locked": true,
+        "message": "",
+        "currentState": "LOCKED",
+        "_links": {
+          "self": {
+            "href": "http://localhost:8080/api/turnstile/2"
+          },
+          "delete": {
+            "href": "http://localhost:8080/api/turnstile/2"
+          },
+          "coin": {
+            "href": "http://localhost:8080/api/turnstile/2/coin"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "locked": true,
+        "message": "",
+        "currentState": "LOCKED",
+        "_links": {
+          "self": {
+            "href": "http://localhost:8080/api/turnstile/3"
+          },
+          "delete": {
+            "href": "http://localhost:8080/api/turnstile/3"
+          },
+          "coin": {
+            "href": "http://localhost:8080/api/turnstile/3/coin"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "locked": true,
+        "message": "",
+        "currentState": "LOCKED",
+        "_links": {
+          "self": {
+            "href": "http://localhost:8080/api/turnstile/4"
+          },
+          "delete": {
+            "href": "http://localhost:8080/api/turnstile/4"
+          },
+          "coin": {
+            "href": "http://localhost:8080/api/turnstile/4/coin"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "locked": true,
+        "message": "",
+        "currentState": "LOCKED",
+        "_links": {
+          "self": {
+            "href": "http://localhost:8080/api/turnstile/5"
+          },
+          "delete": {
+            "href": "http://localhost:8080/api/turnstile/5"
+          },
+          "coin": {
+            "href": "http://localhost:8080/api/turnstile/5/coin"
+          }
+        }
+      }
+    ]
+  },
+  "_links": {
+    "self": {
+      "href": "http://localhost:8080/api/turnstile/?page=0&size=10"
     }
+  },
+  "page": {
+    "size": 10,
+    "totalElements": 5,
+    "totalPages": 1,
+    "number": 0
+  }
 }
 ----
 
@@ -334,8 +361,7 @@ The system throws `TurnstileAlarmException` which results in 409 - Conflict
     "message": "Alarm",
     "path": "/1/pass",
     "status": 409,
-    "timestamp": "2020-01-30T21:06:05.491+0000",
-    "trace": "com.example.kfsm.TurnstileAlarmException: Alarm\r\n\tat com.example.kfsm.TurnstileFSM$Companion$definition$1$2$1.invoke(Turnstile.kt:49)\r\n\tat com.example.kfsm.TurnstileFSM$Companion$definition$1$2$1.invoke(Turnstile.kt:38)\r\n\tat io.jumpco.open.kfsm.StateMapInstance.executeDefaultAction(StateMapInstance.kt:61)\r\n\tat io.jumpco.open.kfsm.StateMapInstance.sendEvent(StateMapInstance.kt:85)\r\n\tat io.jumpco.open.kfsm.StateMachineInstance.sendEvent(StateMachineInstance.kt:152)\r\n\tat com.example.kfsm.TurnstileFSM.pass(Turnstile.kt:35)\r\n\tat com.example.kfsm.TurnstileController.pass(TurnstileController.kt:92)\r\n\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\r\n\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\r\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\r\n\tat java.lang.reflect.Method.invoke(Method.java:498)\r\n\tat org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:190)\r\n\tat org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:138)\r\n\tat org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:106)\r\n\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:888)\r\n\tat org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:793)\r\n\tat org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)\r\n\tat org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1040)\r\n\tat org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:943)\r\n\tat org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006)\r\n\tat org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:909)\r\n\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:660)\r\n\tat org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:883)\r\n\tat javax.servlet.http.HttpServlet.service(HttpServlet.java:741)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:231)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\r\n\tat org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\r\n\tat org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)\r\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\r\n\tat org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)\r\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\r\n\tat org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)\r\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\r\n\tat org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:202)\r\n\tat org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:96)\r\n\tat org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:541)\r\n\tat org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:139)\r\n\tat org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:92)\r\n\tat org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)\r\n\tat org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:343)\r\n\tat org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:367)\r\n\tat org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:65)\r\n\tat org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:860)\r\n\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1598)\r\n\tat org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49)\r\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\r\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\r\n\tat org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)\r\n\tat java.lang.Thread.run(Thread.java:748)\r\n"
+    "timestamp": "2020-01-30T21:06:05.491+0000"
 }
 ----
 
@@ -413,3 +439,16 @@ image:turnstile.png[]
 To learn more about visualization visit link:https://github.com/open-jumpco/kfsm-viz[kfsm-viz] and
 link:https://github.com/open-jumpco/kfsm-viz-plugin[kfsm-viz-plugin]
 
+== Class Diagrams
+
+=== FSM Classes
+
+image::turnstile_classes.png[]
+
+=== Service Classes
+
+image::turnstile_service.png[]
+
+=== Controller Classes
+
+image::turnstile_controller.png[]

@@ -1,0 +1,46 @@
+@startuml
+
+interface StateMachineDefinition<S, E, C, A, R> {
+}
+
+interface StateMachineInstance<S, E, C, A, R> {
+}
+
+enum TurnstileEvent {
+    COIN
+    PASS
+}
+
+enum TurnstileState {
+    LOCKED
+    UNLOCKED
+}
+class TurnstileData <<data>> {
+    id: Long
+    locked: Boolean
+    message: String
+}
+
+interface TurnstileContext {
+    currentState: TurnstileState
+    alarm(): TurnstileData
+    lock(): TurnstileData
+    unlock(): TurnstileData
+    returnCoin(): TurnstileData
+}
+
+TurnstileContext ..> TurnstileData
+
+class TurnstileFSM {
+    event(event: String): TurnstileData
+    coin(): TurnstileData
+    pass(): TurnstileData
+    allowed(event: TurnstileEvent): boolean
+}
+
+TurnstileFSM .up.> TurnstileEvent: <<use>>
+TurnstileFSM .up.> TurnstileState: <<use>>
+TurnstileFSM .right.> TurnstileContext:<<use>>
+TurnstileFSM --> StateMachineDefinition: definition <<static>>
+TurnstileFSM -left-> StateMachineInstance: fsm
+@enduml

@@ -5,12 +5,13 @@ import com.example.kfsm.TurnstileEvent.PASS
 import com.example.kfsm.TurnstileState.LOCKED
 import com.example.kfsm.TurnstileState.UNLOCKED
 import io.jumpco.open.kfsm.stateMachine
+import org.springframework.hateoas.server.core.Relation
 
-
+@Relation(itemRelation = "turnstile", collectionRelation = "turnstiles")
 data class TurnstileData(
-    val id: Long,
-    val locked: Boolean,
-    val message: String
+        val id: Long,
+        val locked: Boolean,
+        val message: String
 ) {
     val currentState: TurnstileState
         get() = if (locked) LOCKED else UNLOCKED
@@ -44,13 +45,12 @@ class TurnstileFSM(context: TurnstileContext) {
 
     companion object {
         private val definition = stateMachine(
-            TurnstileState.values().toSet(),
-            TurnstileEvent.values().toSet(),
-            TurnstileContext::class,
-            Any::class,
-            TurnstileData::class
+                TurnstileState.values().toSet(),
+                TurnstileEvent.values().toSet(),
+                TurnstileContext::class,
+                Any::class,
+                TurnstileData::class
         ) {
-            defaultInitialState = LOCKED
             initialState { currentState }
             default {
                 action { _, _, _ ->
@@ -72,7 +72,6 @@ class TurnstileFSM(context: TurnstileContext) {
             }
         }.build()
 
-        fun defaultInitialState() = definition.defaultInitialState ?: LOCKED
         fun possibleEvents(state: TurnstileState) = definition.possibleEvents(state, false)
     }
 }
