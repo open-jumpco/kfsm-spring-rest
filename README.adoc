@@ -64,7 +64,7 @@ data class TurnstileEntity(
     fun toInfo() = TurnstileData(id!!, locked, message)
 }
 
-interface TurnstileRepository : CrudRepository<TurnstileEntity, Long>
+interface TurnstileRepository : PagingAndSortingRepository<TurnstileEntity, Long>
 
 class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepository, id: Long) : TurnstileContext {
     val turnstileInfo: TurnstileEntity
@@ -99,6 +99,11 @@ class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepos
 
 A Web UI is available at link:https://github.com/open-jumpco/kfsm-hateoas-client[kfsm-hateoas-client]
 
+
+== API
+
+link:http://localhost:8080/[Swagger UI]
+
 == Operations
 
 This section describes the various operations.
@@ -109,11 +114,30 @@ We can obtain a list of top level API operations.
 
 [source,bash]
 ----
-http http://localhost:8080/
+http http://localhost:8080/api
+----
+Should return:
+[source,json]
+----
+{
+    "_links": {
+        "create": {
+            "href": "http://localhost:8080/api/turnstile/"
+        },
+        "list": {
+            "href": "http://localhost:8080/api/turnstile/"
+        },
+        "self": {
+            "href": "http://localhost:8080/api?requestedVersion=1"
+        }
+    },
+    "apiName": "Turnstile",
+    "apiVersion": 1
+}
 ----
 
-Only `list` and `create` are available at the top level.
-All other operations apply to specific turnstile resources and those resources
+Only `list` and `create` are available at the top-level.
+All other operations apply to specific turnstile resources, and those resources
 contain the embedded links for performing the options.
 
 We start by creating some turnstile entities:
@@ -122,7 +146,7 @@ We start by creating some turnstile entities:
 
 [source,bash]
 ----
-http POST http://localhost:8080/turnstile/
+http POST http://localhost:8080/api/turnstile/
 ----
 
 Should return:
@@ -132,10 +156,10 @@ Should return:
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/turnstile/1/coin"
+            "href": "http://localhost:8080/api/turnstile/1/coin"
         },
         "self": {
-            "href": "http://localhost:8080/turnstile/1"
+            "href": "http://localhost:8080/api/turnstile/1"
         }
     },
     "currentState": "LOCKED",
@@ -151,7 +175,7 @@ After calling is 5 times we can list the turnstiles
 
 [source,bash]
 ----
-http http://localhost:8080/turnstile/
+http http://localhost:8080/api/turnstile/
 ----
 
 Should return:
@@ -268,7 +292,7 @@ This uses the `self` link from the resource.
 
 [source,bash]
 ----
-http http://localhost:8080/turnstile/1
+http http://localhost:8080/api/turnstile/1
 ----
 
 Returns:
@@ -278,10 +302,10 @@ Returns:
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/turnstile/1/coin"
+            "href": "http://localhost:8080/api/turnstile/1/coin"
         },
         "self": {
-            "href": "http://localhost:8080/turnstile/1"
+            "href": "http://localhost:8080/api/turnstile/1"
         }
     },
     "id": 1,
@@ -294,7 +318,7 @@ Returns:
 
 [source,bash]
 ----
-http POST http://localhost:8080/turnstile/1/coin
+http POST http://localhost:8080/api/turnstile/1/coin
 ----
 
 Should return:
@@ -304,13 +328,13 @@ Should return:
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/turnstile/1/coin"
+            "href": "http://localhost:8080/api/turnstile/1/coin"
         },
         "pass": {
-            "href": "http://localhost:8080/turnstile/1/pass"
+            "href": "http://localhost:8080/api/turnstile/1/pass"
         },
         "self": {
-            "href": "http://localhost:8080/turnstile/1"
+            "href": "http://localhost:8080/api/turnstile/1"
         }
     },
     "id": 1,
@@ -323,7 +347,7 @@ Should return:
 
 [source,bash]
 ----
-http POST http://localhost:8080/turnstile/1/pass
+http POST http://localhost:8080/api/turnstile/1/pass
 ----
 
 Should return:
@@ -333,10 +357,10 @@ Should return:
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/turnstile/1/coin"
+            "href": "http://localhost:8080/api/turnstile/1/coin"
         },
         "self": {
-            "href": "http://localhost:8080/turnstile/1"
+            "href": "http://localhost:8080/api/turnstile/1"
         }
     },
     "id": 1,
@@ -349,7 +373,7 @@ Should return:
 
 [source,bash]
 ----
-http POST http://localhost:8080/turnstile/1/pass
+http POST http://localhost:8080/api/turnstile/1/pass
 ----
 
 The system throws `TurnstileAlarmException` which results in 409 - Conflict
@@ -369,7 +393,7 @@ The system throws `TurnstileAlarmException` which results in 409 - Conflict
 
 [source,bash]
 ----
-http POST http://localhost:8080/turnstile/1/coin
+http POST http://localhost:8080/api/turnstile/1/coin
 ----
 
 Should return:
@@ -379,13 +403,13 @@ Should return:
 {
     "_links": {
         "coin": {
-            "href": "http://localhost:8080/turnstile/1/coin"
+            "href": "http://localhost:8080/api/turnstile/1/coin"
         },
         "pass": {
-            "href": "http://localhost:8080/turnstile/1/pass"
+            "href": "http://localhost:8080/api/turnstile/1/pass"
         },
         "self": {
-            "href": "http://localhost:8080/turnstile/1"
+            "href": "http://localhost:8080/api/turnstile/1"
         }
     },
     "id": 1,
