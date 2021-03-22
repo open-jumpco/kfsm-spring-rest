@@ -1,10 +1,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
-    id("org.springframework.boot") version "2.3.3.RELEASE"
-    id("io.spring.dependency-management") version "1.0.10.RELEASE"
-    kotlin("jvm") version "1.3.72"
-    kotlin("plugin.spring") version "1.3.72"
-    id("io.jumpco.open.kfsm.viz-plugin") version "1.0.9"
+    id("org.springframework.boot") version "2.4.4"
+    id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    kotlin("jvm") version "1.4.31"
+    kotlin("plugin.spring") version "1.4.31"
+    kotlin("plugin.jpa") version "1.4.31"
+    id("io.jumpco.open.kfsm.viz-plugin") version "1.4.0"
 }
 
 group = "com.example"
@@ -13,13 +14,12 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenLocal()
-    jcenter()
     mavenCentral()
     maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 dependencies {
-    implementation("io.jumpco.open:kfsm-jvm:1.0.3-SNAPSHOT")
+    implementation("io.jumpco.open:kfsm-jvm:1.4.3.1")
 
     implementation("org.springframework.boot:spring-boot-starter-hateoas")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -27,9 +27,9 @@ dependencies {
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    implementation("org.springdoc:springdoc-openapi-ui:1.4.4")
-    implementation("org.springdoc:springdoc-openapi-hateoas:1.4.4")
-    implementation("org.springdoc:springdoc-openapi-kotlin:1.4.4")
+    implementation("org.springdoc:springdoc-openapi-ui:1.5.6")
+    implementation("org.springdoc:springdoc-openapi-hateoas:1.5.6")
+    implementation("org.springdoc:springdoc-openapi-kotlin:1.5.6")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -49,7 +49,7 @@ tasks.withType<Test> {
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 }
 
