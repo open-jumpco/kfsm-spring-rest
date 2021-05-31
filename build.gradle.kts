@@ -1,11 +1,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
-    id("org.springframework.boot") version "2.4.4"
+    id("org.springframework.boot") version "2.4.5"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    kotlin("jvm") version "1.4.31"
-    kotlin("plugin.spring") version "1.4.31"
-    kotlin("plugin.jpa") version "1.4.31"
-    id("io.jumpco.open.kfsm.viz-plugin") version "1.4.0"
+    kotlin("jvm") version "1.4.32"
+    kotlin("plugin.spring") version "1.4.32"
+    kotlin("plugin.jpa") version "1.4.32"
+    id("io.jumpco.open.kfsm.viz-plugin") version "1.4.32.1"
 }
 
 group = "com.example"
@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.jumpco.open:kfsm-jvm:1.4.3.1")
+    implementation("io.jumpco.open:kfsm-jvm:1.4.32")
 
     implementation("org.springframework.boot:spring-boot-starter-hateoas")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -27,14 +27,14 @@ dependencies {
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    implementation("org.springdoc:springdoc-openapi-ui:1.5.6")
-    implementation("org.springdoc:springdoc-openapi-hateoas:1.5.6")
-    implementation("org.springdoc:springdoc-openapi-kotlin:1.5.6")
+    implementation("org.springdoc:springdoc-openapi-ui:1.5.8")
+    implementation("org.springdoc:springdoc-openapi-hateoas:1.5.8")
+    implementation("org.springdoc:springdoc-openapi-kotlin:1.5.8")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-    runtimeOnly("com.h2database:h2:1.4.200")
+    runtimeOnly("com.h2database:h2")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
