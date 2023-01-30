@@ -38,7 +38,7 @@ enum class TurnstileState {
 class TurnstileFSM(context: TurnstileContext) {
     private val fsm = definition.create(context)
 
-    fun event(event: String) = fsm.sendEvent(TurnstileEvent.valueOf(event.toUpperCase()))
+    fun event(event: String) = fsm.sendEvent(TurnstileEvent.valueOf(event.uppercase()))
     fun coin() = fsm.sendEvent(COIN)
     fun pass() = fsm.sendEvent(PASS)
     fun allowed(event: TurnstileEvent) = fsm.allowed().contains(event)
@@ -63,6 +63,7 @@ class TurnstileFSM(context: TurnstileContext) {
                 }
             }
             whenState(UNLOCKED) {
+                // TODO add timeout to lock similar to https://github.com/open-jumpco/kfsm-web/blob/ad96b3a97845e2f2278456c7ad2a9d4c6ded88bd/src/main/kotlin/com/example/kfsm/Turnstile.kt#L43
                 onEvent(PASS to LOCKED) {
                     lock()
                 }

@@ -7,12 +7,13 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.web.bind.annotation.ResponseStatus
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType.AUTO
-import javax.persistence.Id
-import javax.persistence.Table
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType.AUTO
+import jakarta.persistence.Id
+import jakarta.persistence.Table
+import org.springframework.data.repository.CrudRepository
 
 @ResponseStatus(CONFLICT)
 class TurnstileAlarmException(message: String) : Exception(message)
@@ -35,7 +36,7 @@ data class TurnstileEntity(
     fun toInfo() = TurnstileData(id!!, locked, message)
 }
 
-interface TurnstileRepository : PagingAndSortingRepository<TurnstileEntity, Long> {
+interface TurnstileRepository : PagingAndSortingRepository<TurnstileEntity, Long>, CrudRepository<TurnstileEntity, Long> {
 }
 
 class TurnstilePersistentContext(private val repository: TurnstileRepository, id: Long) : TurnstileContext {
@@ -63,7 +64,7 @@ class TurnstilePersistentContext(private val repository: TurnstileRepository, id
     }
 
     override fun returnCoin(): TurnstileData? {
-        entity = repository.save(entity.update(message = "Return Coin"))
+        entity = repository.save(entity.update(message = "Coin returned"))
         return entity.toInfo()
     }
 }

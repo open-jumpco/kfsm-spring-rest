@@ -33,7 +33,7 @@ class TurnstileService(private val turnstileRepository: TurnstileRepository) {
 
     companion object {
         fun possibleEvents(data: TurnstileData): Set<String> {
-            return TurnstileFSM.possibleEvents(data.currentState).map { it.name.toLowerCase() }.toSet()
+            return TurnstileFSM.possibleEvents(data.currentState).map { it.name.lowercase() }.toSet()
         }
     }
 }

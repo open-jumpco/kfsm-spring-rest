@@ -94,7 +94,7 @@ class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepos
     }
 
     override fun returnCoin(): TurnstileData? {
-        return turnstileRepository.save(turnstileInfo.update(message = "Return Coin")).toInfo()
+        return turnstileRepository.save(turnstileInfo.update(message = "Coin returned")).toInfo()
     }
 }
 ----
@@ -103,10 +103,11 @@ class TurnstilePersistentContext(private val turnstileRepository: TurnstileRepos
 
 A Web UI is available at link:https://github.com/open-jumpco/kfsm-hateoas-client[kfsm-hateoas-client]
 
+This is embedded in `src/main/resources/static`
 
 == API
 
-link:http://localhost:8080/[Swagger UI]
+link:http://localhost:8080/api-docs[Swagger UI]
 
 == Operations
 
@@ -120,6 +121,9 @@ We can obtain a list of top level API operations.
 ----
 http http://localhost:8080/api
 ----
+
+link:http://localhost:8080/api[View ApiList]
+
 Should return:
 [source,json]
 ----
@@ -418,51 +422,21 @@ Should return:
     },
     "id": 1,
     "locked": false,
-    "message": "Return Coin"
+    "message": "Coin returned"
 }
 ----
 
 == Generated State Table
 
-=== TurnstileFSM State Map
-
-|===
-| Start | Event[Guard] | Target | Action
-
-| LOCKED
-| COIN
-| UNLOCKED
-a| [source,kotlin]
-----
-{
-unlock()
-}
-----
-
-| UNLOCKED
-| PASS
-| LOCKED
-a| [source,kotlin]
-----
-{
-lock()
-}
-----
-
-| UNLOCKED
-| COIN
-| UNLOCKED
-a| [source,kotlin]
-----
-{
-returnCoin()
-}
-----
-|===
+include::generated/turnstile.adoc[]
 
 == Generated State Diagram
 
-image:turnstile.png[]
+image::turnstile.svg[]
+
+== Generated Simple State Diagram
+
+image::turnstile-simple.svg[]
 
 To learn more about visualization visit link:https://github.com/open-jumpco/kfsm-viz[kfsm-viz] and
 link:https://github.com/open-jumpco/kfsm-viz-plugin[kfsm-viz-plugin]
@@ -471,12 +445,12 @@ link:https://github.com/open-jumpco/kfsm-viz-plugin[kfsm-viz-plugin]
 
 === FSM Classes
 
-image::turnstile_classes.png[]
+image::turnstile-classes.svg[]
 
 === Service Classes
 
-image::turnstile_service.png[]
+image::turnstile-service.svg[]
 
 === Controller Classes
 
-image::turnstile_controller.png[]
+image::turnstile-controller.svg[]

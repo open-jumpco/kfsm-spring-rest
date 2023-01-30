@@ -48,4 +48,5 @@ class TurnstileController(
         turnstileService.delete(id);
         return ResponseEntity.status(OK).build()
     }
+    // TODO add WebSocket support for timeout when locking after timeout.
 }

@@ -6,6 +6,8 @@ import org.springframework.web.servlet.view.RedirectView
 
 @Controller
 class RootController {
+    @GetMapping("/api-docs")
+    fun apiDocs() = RedirectView("/swagger-ui.html")
     @GetMapping("/")
-    fun root() = RedirectView("/swagger-ui.html")
+    fun root() = RedirectView("/index.html")
 }
