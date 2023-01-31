@@ -13,6 +13,13 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType.AUTO
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationEvent
 import org.springframework.data.repository.CrudRepository
 
 @ResponseStatus(CONFLICT)
@@ -39,7 +46,10 @@ data class TurnstileEntity(
 interface TurnstileRepository : PagingAndSortingRepository<TurnstileEntity, Long>, CrudRepository<TurnstileEntity, Long> {
 }
 
-class TurnstilePersistentContext(private val repository: TurnstileRepository, id: Long) : TurnstileContext {
+class TurnstilePersistentContext(private val context: ApplicationContext, private val repository: TurnstileRepository, id: Long) : TurnstileContext {
+    companion object {
+        private val logger = LoggerFactory.getLogger(TurnstilePersistentContext::class.java)
+    }
     var entity: TurnstileEntity
 
     init {
@@ -49,22 +59,36 @@ class TurnstilePersistentContext(private val repository: TurnstileRepository, id
     override val currentState: TurnstileState
         get() = if (entity.locked) LOCKED else UNLOCKED
 
-    override fun alarm(): TurnstileData? {
+    override suspend fun alarm(): TurnstileData? {
         throw TurnstileAlarmException("Alarm")
     }
 
-    override fun lock(): TurnstileData? {
+    override suspend fun lock(): TurnstileData? {
+        logger.info("lock:{}", entity.id)
         entity = repository.save(entity.update(locked = true))
         return entity.toInfo()
     }
 
-    override fun unlock(): TurnstileData? {
+    override suspend fun unlock(): TurnstileData? {
+        logger.info("unlock:{}", entity.id)
         entity = repository.save(entity.update(locked = false))
         return entity.toInfo()
     }
 
-    override fun returnCoin(): TurnstileData? {
+    override suspend fun returnCoin(): TurnstileData? {
+        logger.info("returnCoin:{}", entity.id)
         entity = repository.save(entity.update(message = "Coin returned"))
         return entity.toInfo()
+    }
+
+    override suspend fun timeout(): TurnstileData? {
+        logger.info("timeout:{}", entity.id)
+        entity = repository.save(entity.update(locked = true))
+        val data = entity.toInfo()
+        CoroutineScope(Dispatchers.Unconfined).launch {
+            context.publishEvent(TurnstileApplicationEvent(data, this))
+            logger.info("publishEvent:data={}", data)
+        }
+        return data
     }
 }

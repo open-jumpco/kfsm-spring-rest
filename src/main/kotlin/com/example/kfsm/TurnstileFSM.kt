@@ -4,7 +4,8 @@ import com.example.kfsm.TurnstileEvent.COIN
 import com.example.kfsm.TurnstileEvent.PASS
 import com.example.kfsm.TurnstileState.LOCKED
 import com.example.kfsm.TurnstileState.UNLOCKED
-import io.jumpco.open.kfsm.stateMachine
+import io.jumpco.open.kfsm.async.asyncStateMachine
+import kotlinx.coroutines.CoroutineScope
 import org.springframework.hateoas.server.core.Relation
 
 @Relation(itemRelation = "turnstile", collectionRelation = "turnstiles")
@@ -19,10 +20,11 @@ data class TurnstileData(
 
 interface TurnstileContext {
     val currentState: TurnstileState
-    fun alarm(): TurnstileData?
-    fun lock(): TurnstileData?
-    fun unlock(): TurnstileData?
-    fun returnCoin(): TurnstileData?
+    suspend fun alarm(): TurnstileData?
+    suspend fun lock(): TurnstileData?
+    suspend fun unlock(): TurnstileData?
+    suspend fun returnCoin(): TurnstileData?
+    suspend fun timeout(): TurnstileData?
 }
 
 enum class TurnstileEvent {
@@ -35,16 +37,16 @@ enum class TurnstileState {
     UNLOCKED
 }
 
-class TurnstileFSM(context: TurnstileContext) {
-    private val fsm = definition.create(context)
+class TurnstileFSM(context: TurnstileContext, coroutineScope: CoroutineScope) {
+    private val fsm = definition.create(context, coroutineScope)
 
-    fun event(event: String) = fsm.sendEvent(TurnstileEvent.valueOf(event.uppercase()))
-    fun coin() = fsm.sendEvent(COIN)
-    fun pass() = fsm.sendEvent(PASS)
+    suspend fun event(event: String) = fsm.sendEvent(TurnstileEvent.valueOf(event.uppercase()))
+    suspend fun coin() = fsm.sendEvent(COIN)
+    suspend fun pass() = fsm.sendEvent(PASS)
     fun allowed(event: TurnstileEvent) = fsm.allowed().contains(event)
 
     companion object {
-        private val definition = stateMachine(
+        private val definition = asyncStateMachine(
                 TurnstileState.values().toSet(),
                 TurnstileEvent.values().toSet(),
                 TurnstileContext::class,
@@ -63,7 +65,9 @@ class TurnstileFSM(context: TurnstileContext) {
                 }
             }
             whenState(UNLOCKED) {
-                // TODO add timeout to lock similar to https://github.com/open-jumpco/kfsm-web/blob/ad96b3a97845e2f2278456c7ad2a9d4c6ded88bd/src/main/kotlin/com/example/kfsm/Turnstile.kt#L43
+                timeout(LOCKED, timeout = 3000) {
+                    timeout()
+                }
                 onEvent(PASS to LOCKED) {
                     lock()
                 }

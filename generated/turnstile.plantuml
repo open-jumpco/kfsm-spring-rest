@@ -8,6 +8,7 @@ skinparam state {
 }
 state TurnstileFSM {
 LOCKED --> UNLOCKED : COIN -> {\l  unlock()\l}
+UNLOCKED --> LOCKED : <<timeout = timeout=3000>> -> {\l  timeout()\l}
 UNLOCKED --> LOCKED : PASS -> {\l  lock()\l}
 UNLOCKED --> UNLOCKED : COIN -> {\l  returnCoin()\l}
 }

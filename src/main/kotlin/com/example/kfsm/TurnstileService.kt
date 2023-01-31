@@ -1,5 +1,8 @@
 package com.example.kfsm
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import org.springframework.context.ApplicationContext
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -7,33 +10,35 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 
 @Service
-class TurnstileService(private val turnstileRepository: TurnstileRepository) {
-    fun create(): TurnstileData {
-        return turnstileRepository.save(TurnstileEntity()).toInfo()
-    }
+class TurnstileService(private val turnstileRepository: TurnstileRepository, private val context: ApplicationContext) {
 
-    fun get(id: Long): TurnstileData {
-        return turnstileRepository.findById(id).orElseThrow { TurnstileInfoNotFound("TurnstileInfo $id not found") }
-                .toInfo()
-    }
+  fun create(): TurnstileData {
+    return turnstileRepository.save(TurnstileEntity()).toInfo()
+  }
 
-    fun list(pageable: Pageable?): Page<TurnstileData> {
-        val page = turnstileRepository.findAll(pageable ?: PageRequest.of(0, 10))
-        return PageImpl(page.content.map { it.toInfo() }, page.pageable, page.totalElements)
-    }
+  fun get(id: Long): TurnstileData {
+    return turnstileRepository.findById(id).orElseThrow { TurnstileInfoNotFound("TurnstileInfo $id not found") }
+      .toInfo()
+  }
 
-    fun event(id: Long, event: String): TurnstileData {
-        val fsm = TurnstileFSM(TurnstilePersistentContext(turnstileRepository, id))
-        return fsm.event(event) ?: error("Expected result from event")
-    }
+  fun list(pageable: Pageable?): Page<TurnstileData> {
+    val page = turnstileRepository.findAll(pageable ?: PageRequest.of(0, 10))
+    return PageImpl(page.content.map { it.toInfo() }, page.pageable, page.totalElements)
+  }
 
-    fun delete(id: Long) {
-        turnstileRepository.deleteById(id)
-    }
+  suspend fun event(id: Long, event: String): TurnstileData {
+    val scope = CoroutineScope(Dispatchers.Default)
+    val fsm = TurnstileFSM(TurnstilePersistentContext(context, turnstileRepository, id), scope)
+    return fsm.event(event) ?: error("Expected result from event")
+  }
 
-    companion object {
-        fun possibleEvents(data: TurnstileData): Set<String> {
-            return TurnstileFSM.possibleEvents(data.currentState).map { it.name.lowercase() }.toSet()
-        }
+  fun delete(id: Long) {
+    turnstileRepository.deleteById(id)
+  }
+
+  companion object {
+    fun possibleEvents(data: TurnstileData): Set<String> {
+      return TurnstileFSM.possibleEvents(data.currentState).map { it.name.lowercase() }.toSet()
     }
+  }
 }

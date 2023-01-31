@@ -11,6 +11,7 @@ import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType.H2
 import org.springframework.util.StringUtils
+import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import java.net.InetAddress
 import java.net.UnknownHostException
 import javax.sql.DataSource
