@@ -1,7 +1,7 @@
 package com.example.kfsm
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.context.ApplicationContext
+import com.fasterxml.jackson.databind.SerializationFeature
 import org.springframework.context.ApplicationListener
 import org.springframework.hateoas.mediatype.collectionjson.Jackson2CollectionJsonModule
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule
@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class TurnstileEventHandler(
-  private val context: ApplicationContext,
   private val broadcaster: WebSocketBroadcast,
   private val representationModelAssembler: TurnstileRepresentationModelAssembler
 ) : ApplicationListener<TurnstileApplicationEvent> {
@@ -18,6 +17,7 @@ class TurnstileEventHandler(
   init {
     mapper.registerModule(Jackson2HalModule())
     mapper.registerModule(Jackson2CollectionJsonModule())
+    mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
   }
 
   override fun onApplicationEvent(event: TurnstileApplicationEvent) {
