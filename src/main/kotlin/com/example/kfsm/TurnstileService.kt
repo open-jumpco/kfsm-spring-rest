@@ -11,13 +11,16 @@ import org.springframework.stereotype.Service
 
 @Service
 class TurnstileService(private val turnstileRepository: TurnstileRepository, private val context: ApplicationContext) {
-
+  private val scope = CoroutineScope(Dispatchers.Unconfined)
+  // In the case where an FSM is created for the duration of an event
+  private val stateMachines = mutableMapOf<Long, TurnstileFSM>()
   fun create(): TurnstileData {
     return turnstileRepository.save(TurnstileEntity()).toInfo()
   }
 
   fun get(id: Long): TurnstileData {
-    return turnstileRepository.findById(id).orElseThrow { TurnstileInfoNotFound("TurnstileInfo $id not found") }
+    return turnstileRepository.findById(id)
+      .orElseThrow { TurnstileInfoNotFound("TurnstileInfo $id not found") }
       .toInfo()
   }
 
@@ -27,13 +30,13 @@ class TurnstileService(private val turnstileRepository: TurnstileRepository, pri
   }
 
   suspend fun event(id: Long, event: String): TurnstileData {
-    val scope = CoroutineScope(Dispatchers.Default)
-    val fsm = TurnstileFSM(TurnstilePersistentContext(context, turnstileRepository, id), scope)
+    val fsm = stateMachines.computeIfAbsent(id) { TurnstileFSM(TurnstilePersistentContext(context, turnstileRepository, id), scope) }
     return fsm.event(event) ?: error("Expected result from event")
   }
 
   fun delete(id: Long) {
     turnstileRepository.deleteById(id)
+    stateMachines.remove(id)
   }
 
   companion object {

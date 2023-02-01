@@ -96,9 +96,9 @@ class TurnstilePersistentContext(
 
   override suspend fun timeout(): TurnstileData? {
     logger.info("timeout:{}", entity.id)
-    entity = repository.save(entity.update(locked = true, message = "Timeout"))
+    entity = repository.save(entity.update(locked = true, message = "Timeout: coin returned"))
     val data = entity.toInfo()
-    CoroutineScope(Dispatchers.Default).launch {
+    CoroutineScope(Dispatchers.IO).launch {
       context.publishEvent(TurnstileApplicationEvent(data, this))
       logger.info("publishEvent:data={}", data)
     }
@@ -108,7 +108,7 @@ class TurnstilePersistentContext(
 
   private fun clearMessage() {
     CoroutineScope(Dispatchers.IO).async {
-      delay(2000)
+      delay(3000)
       entity = repository.save(entity.update(message = null))
       context.publishEvent(TurnstileApplicationEvent(entity.toInfo(), this))
       logger.info("Cleared Message")
