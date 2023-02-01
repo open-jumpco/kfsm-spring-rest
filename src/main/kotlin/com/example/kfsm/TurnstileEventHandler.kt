@@ -2,6 +2,7 @@ package com.example.kfsm
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.springframework.context.ApplicationListener
 import org.springframework.hateoas.mediatype.collectionjson.Jackson2CollectionJsonModule
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule
@@ -13,16 +14,13 @@ class TurnstileEventHandler(
   private val representationModelAssembler: TurnstileRepresentationModelAssembler
 ) : ApplicationListener<TurnstileApplicationEvent> {
   private val mapper = ObjectMapper()
-
   init {
+    mapper.registerModule(KotlinModule.Builder().build())
     mapper.registerModule(Jackson2HalModule())
-    mapper.registerModule(Jackson2CollectionJsonModule())
-    mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
   }
-
   override fun onApplicationEvent(event: TurnstileApplicationEvent) {
     logger.info("onApplicationEvent:event={}", event)
-    val data = mapper.writeValueAsString(representationModelAssembler.toModel(event.data))
+    val data = mapper.writeValueAsString(event.data)
     logger.info("onApplicationEvent:data={}", data)
     broadcaster.broadcast(data)
   }
