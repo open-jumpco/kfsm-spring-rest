@@ -77,13 +77,15 @@ class TurnstilePersistentContext(
 
   override suspend fun lock(): TurnstileData? {
     logger.info("lock:{}", entity.id)
-    entity = repository.save(entity.update(locked = true, message = null))
+    entity = repository.save(entity.update(locked = true, message = "Locked"))
+    clearMessage()
     return entity.toInfo()
   }
 
   override suspend fun unlock(): TurnstileData? {
     logger.info("unlock:{}", entity.id)
-    entity = repository.save(entity.update(locked = false, message = null))
+    entity = repository.save(entity.update(locked = false, message = "Unlock"))
+    clearMessage()
     return entity.toInfo()
   }
 
@@ -110,8 +112,9 @@ class TurnstilePersistentContext(
     CoroutineScope(Dispatchers.IO).async {
       delay(3000)
       entity = repository.save(entity.update(message = null))
-      context.publishEvent(TurnstileApplicationEvent(entity.toInfo(), this))
-      logger.info("Cleared Message")
+      val data = entity.toInfo()
+      context.publishEvent(TurnstileApplicationEvent(data, this))
+      logger.info("publishEvent:data={}", data)
     }
   }
 }

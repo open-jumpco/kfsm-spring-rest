@@ -79,7 +79,17 @@ configure<io.jumpco.open.kfsm.gradle.VizPluginExtension> {
 
 tasks.register<Copy>("unpackDist") {
   from(zipTree("../kfsm-hateoas-client/build/libs/kfsm-hateoas-client.zip"))
-  into(layout.projectDirectory.dir("src/main/resources/static"))
+  val dir = layout.projectDirectory.dir("src/main/resources/static")
+  into(dir)
+  doLast {
+    val html = File(dir.asFile, "index.html").readText()
+    dir.asFile.listFiles().forEach { file ->
+      if(!file.name.endsWith(".html") && !html.contains(file.name)) {
+        project.logger.lifecycle("${this.name}:remove:${file}")
+        file.delete()
+      }
+    }
+  }
 }
 
 val processResources by tasks.existing {
