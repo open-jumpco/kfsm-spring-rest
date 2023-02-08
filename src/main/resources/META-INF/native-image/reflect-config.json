@@ -9,17 +9,6 @@
         "name": "<init>",
         "parameterTypes": []
       }
-    ],
-    "allDeclaredMethods": true,
-    "allDeclaredFields": true,
-    "allDeclaredConstructors": true,
-    "allPublicMethods": true,
-    "allPublicFields": true,
-    "allPublicConstructors": true,
-    "queryAllDeclaredMethods": true,
-    "queryAllDeclaredConstructors": true,
-    "queryAllPublicMethods": true,
-    "queryAllPublicConstructors": true,
-    "unsafeAllocated": true
+    ]
   }
 ]
